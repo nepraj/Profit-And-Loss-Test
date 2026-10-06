@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>गुरुकुल पब्लिक स्कूल - लाभ और हानि परीक्षा</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hind:wght@400;600;700&family=Baloo+2:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-deep:#081525; --panel:#123049; --panel-line:#1e4463;
+    --ink:#f4f8fb; --ink-dim:#b9cbdc;
+    --amber:#ffc247; --amber-deep:#e69b1a;
+    --safe:#4fd98b; --warn:#ffb040; --danger:#ff5d5d;
+    --a:#5aa9ff; --b:#6be3c4; --c:#c89bff; --d:#ff9e6b;
+    box-sizing:border-box;
+    padding-top:env(safe-area-inset-top,0px);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  *{ box-sizing:border-box; }
+  html,body{ height:100%; margin:0; background:var(--bg-deep); color:var(--ink);
+    font-family:'Hind','Noto Sans Devanagari',sans-serif; overflow:hidden; }
+  #app{ height:100%; width:100%; display:flex; flex-direction:column; }
+
+  header{ flex:0 0 auto; background:linear-gradient(180deg,var(--panel),var(--bg-deep));
+    border-bottom:3px solid var(--amber); padding:1vh 3vw; display:flex; align-items:center;
+    justify-content:space-between; gap:2vw; }
+  .school-name{ font-family:'Baloo 2',sans-serif; font-weight:800; font-size:clamp(20px,3vw,46px);
+    color:var(--amber); line-height:1.15; }
+  .head-right{ display:flex; align-items:center; gap:1.4vw; text-align:right; }
+  .subject-line{ font-size:clamp(12px,1.2vw,19px); color:var(--ink-dim); }
+  .progress-line{ font-family:'Baloo 2',sans-serif; font-weight:700; font-size:clamp(15px,1.8vw,26px); }
+
+  main{ flex:1 1 auto; display:flex; flex-direction:column; padding:1.4vh 3.5vw 1vh; min-height:0; }
+  .screen{ display:none; flex:1; min-height:0; flex-direction:column; }
+  .screen.active{ display:flex; }
+
+  #start-screen{ align-items:center; justify-content:center; text-align:center; gap:2.2vh; }
+  #start-screen h1{ font-family:'Baloo 2',sans-serif; font-size:clamp(26px,4vw,58px); margin:0; }
+  #start-screen p{ font-size:clamp(15px,1.6vw,24px); color:var(--ink-dim); max-width:64ch; margin:0; line-height:1.5; }
+  .meta-pills{ display:flex; gap:1.2vw; flex-wrap:wrap; justify-content:center; }
+  .pill{ background:var(--panel); border:1px solid var(--panel-line); border-radius:999px;
+    padding:0.8vh 1.4vw; font-size:clamp(13px,1.2vw,19px); color:var(--ink-dim); }
+  .pill b{ color:var(--amber); }
+
+  button{ font-family:'Hind',sans-serif; cursor:pointer; }
+  button.primary{ font-family:'Baloo 2',sans-serif; font-weight:700; font-size:clamp(17px,1.9vw,27px);
+    background:var(--amber); color:#201200; border:none; border-radius:14px; padding:1.4vh 3vw;
+    box-shadow:0 6px 0 var(--amber-deep); }
+  button.primary:active{ transform:translateY(3px); box-shadow:0 3px 0 var(--amber-deep); }
+  button.ghost{ font-weight:600; background:transparent; color:var(--ink);
+    border:1px solid var(--panel-line); border-radius:10px; padding:0.9vh 1.4vw;
+    font-size:clamp(13px,1.15vw,19px); }
+  button.ghost:hover{ border-color:var(--ink-dim); }
+  button.ghost.big{ padding:1.1vh 1.8vw; font-size:clamp(15px,1.4vw,22px); font-weight:700; }
+  button.playpause{ background:var(--amber); color:#201200; border-color:var(--amber); }
+
+  /* quiz */
+  #quiz-screen{ gap:1.1vh; min-height:0; }
+  .timer-row{ display:flex; align-items:center; gap:1.5vw; flex:0 0 auto; }
+  .diff-tag{ font-family:'Baloo 2',sans-serif; font-weight:700; font-size:clamp(12px,1.1vw,17px);
+    padding:0.5vh 1vw; border-radius:999px; border:1px solid var(--panel-line); color:var(--ink-dim); white-space:nowrap; }
+  .diff-tag.e{ color:var(--safe); border-color:var(--safe); }
+  .diff-tag.m{ color:var(--warn); border-color:var(--warn); }
+  .diff-tag.h{ color:var(--danger); border-color:var(--danger); }
+  .timer-num{ font-family:'Baloo 2',sans-serif; font-weight:800; font-size:clamp(26px,3.2vw,46px);
+    color:var(--safe); min-width:3.4ch; text-align:center; background:var(--panel);
+    border:2px solid var(--panel-line); border-radius:14px; padding:0.2vh 0.8vw; }
+  .timer-num.warn{ color:var(--warn); border-color:var(--warn); }
+  .timer-num.danger{ color:var(--danger); border-color:var(--danger); animation:pulse 1s infinite; }
+  .timer-num.paused{ color:var(--ink-dim); border-color:var(--ink-dim); animation:none; }
+  @keyframes pulse{ 0%,100%{opacity:1;} 50%{opacity:.55;} }
+  .bar-track{ flex:1; height:clamp(12px,1.5vh,18px); background:var(--panel); border-radius:999px;
+    overflow:hidden; border:1px solid var(--panel-line); }
+  .bar-fill{ height:100%; width:100%; background:var(--safe); border-radius:999px; transition:width .25s linear; }
+  .paused-badge{ display:none; font-family:'Baloo 2',sans-serif; font-weight:700; color:#201200; background:var(--amber);
+    border-radius:999px; padding:0.4vh 1vw; font-size:clamp(12px,1.1vw,17px); white-space:nowrap; }
+  .paused-badge.show{ display:inline-block; }
+
+  .q-wrap{ --qs:30px; --os:22px; flex:1 1 auto; min-height:0; background:var(--panel);
+    border:1px solid var(--panel-line); border-radius:18px; padding:2vh 2.6vw;
+    display:flex; flex-direction:column; justify-content:center; gap:2vh; overflow:hidden; }
+  .q-num{ flex:0 0 auto; font-family:'Baloo 2',sans-serif; font-weight:700; color:var(--amber);
+    font-size:clamp(13px,1.3vw,20px); }
+  .q-main{ flex:0 0 auto; display:flex; gap:2vw; align-items:center; }
+  .q-text{ flex:1 1 0; font-weight:600; line-height:1.5; color:var(--ink); font-size:var(--qs); }
+  .fig{ flex:0 0 auto; max-width:44%; background:var(--bg-deep); border:1px solid var(--panel-line);
+    border-radius:12px; padding:0.7em 0.9em; font-size:calc(var(--qs) * 0.62); line-height:1.25; }
+  .fig.hidden{ display:none; }
+  .fig-title{ color:var(--amber); font-weight:700; margin-bottom:.4em; text-align:center; }
+  .bars{ display:flex; align-items:flex-end; gap:.7em; justify-content:center; padding-top:.2em; }
+  .bcol{ display:flex; flex-direction:column; align-items:center; justify-content:flex-end; }
+  .bval{ font-weight:700; color:var(--ink); }
+  .bar{ width:2.1em; background:var(--a); border-radius:.25em .25em 0 0; }
+  .bar.unk{ background:transparent; border:2px dashed var(--warn); }
+  .bval.unk{ color:var(--warn); }
+  .blab{ margin-top:.25em; font-size:.8em; color:var(--ink-dim); white-space:nowrap; }
+  table.picto{ border-collapse:collapse; margin:0 auto; }
+  table.picto td{ padding:.15em .5em; border-bottom:1px solid var(--panel-line); }
+  table.picto td:first-child{ color:var(--ink-dim); white-space:nowrap; }
+  .fig-note{ margin-top:.4em; text-align:center; color:var(--warn); font-weight:600; }
+  .fig-lines div{ font-family:'Baloo 2',monospace; letter-spacing:.06em; padding:.1em 0; }
+
+  .options{ flex:0 0 auto; display:grid; grid-template-columns:1fr 1fr; gap:1.1vh 1.2vw; }
+  .options.one-col{ grid-template-columns:1fr; }
+  .opt{ display:flex; align-items:center; gap:.7em; background:var(--bg-deep);
+    border:1px solid var(--panel-line); border-radius:12px; padding:1vh 1vw;
+    font-weight:600; color:var(--ink); font-size:var(--os); line-height:1.35; }
+  .opt .tag{ flex:0 0 auto; width:1.7em; height:1.7em; border-radius:50%; display:flex; align-items:center;
+    justify-content:center; font-family:'Baloo 2',sans-serif; font-weight:800; font-size:.8em; color:#0c1c2e; }
+  .opt:nth-child(1) .tag{ background:var(--a); }
+  .opt:nth-child(2) .tag{ background:var(--b); }
+  .opt:nth-child(3) .tag{ background:var(--c); }
+  .opt:nth-child(4) .tag{ background:var(--d); }
+
+  /* stacked fractions */
+  .frac{ display:inline-flex; flex-direction:column; vertical-align:middle; text-align:center;
+    margin:0 .12em; line-height:1.1; font-size:.82em; }
+  .frac > span:first-child{ border-bottom:.09em solid currentColor; padding:0 .15em; }
+  .frac > span:last-child{ padding:0 .15em; }
+
+  .ctrl-row{ flex:0 0 auto; display:flex; justify-content:space-between; align-items:center; gap:1vw; }
+  .ctrl-row .side{ display:flex; gap:0.9vw; }
+
+  #end-screen{ overflow:auto; gap:1.6vh; }
+  #end-screen h2{ font-family:'Baloo 2',sans-serif; font-size:clamp(22px,2.8vw,40px); color:var(--amber);
+    margin:1vh 0 0; text-align:center; }
+  .key-grid{ display:grid; grid-template-columns:repeat(10,1fr); gap:0.7vh 0.6vw; }
+  .key-cell{ background:var(--panel); border:1px solid var(--panel-line); border-radius:8px; text-align:center;
+    padding:0.8vh 0.2vw; font-size:clamp(13px,1.15vw,20px); font-weight:600; }
+  .key-cell b{ color:var(--amber); }
+  .key-cell span{ color:var(--safe); font-family:'Baloo 2',sans-serif; font-weight:800; }
+  footer{ flex:0 0 auto; text-align:center; padding:0.5vh 0; font-size:clamp(10px,0.85vw,14px); color:var(--ink-dim); }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="school-name">गुरुकुल पब्लिक स्कूल</div>
+    <div class="head-right">
+      <div>
+        <div class="subject-line">50 प्रश्न · कठिनाई स्तर अनुसार स्वतः समय</div>
+        <div class="progress-line" id="progress-line">लाभ और हानि (Profit &amp; Loss)</div>
+      </div>
+      <button class="ghost big" id="fullscreen-btn" title="पूर्ण स्क्रीन">⛶ पूर्ण स्क्रीन</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="screen active" id="start-screen">
+      <h1>गणित अभ्यास परीक्षा — लाभ और हानि (Profit &amp; Loss)</h1>
+      <p>कुल 50 प्रश्न। प्रत्येक प्रश्न का समय उसके कठिनाई स्तर के अनुसार तय है (न्यूनतम 30 सेकंड, अधिकतम 2 मिनट 45 सेकंड)। समय पूरा होते ही अगला प्रश्न अपने आप आ जाएगा। अंत में उत्तर कुंजी दिखाई जाएगी।</p>
+      <div class="meta-pills">
+        <div class="pill">कुल प्रश्न: <b>50</b></div>
+        <div class="pill">सरल: <b>30–45 से.</b></div>
+        <div class="pill">मध्यम: <b>70 से.</b></div>
+        <div class="pill">कठिन: <b>105–165 से.</b></div>
+        <div class="pill">कुल समय: <b>लगभग 65 मिनट</b></div>
+      </div>
+      <button class="primary" id="start-btn">परीक्षा शुरू करें</button>
+    </section>
+
+    <section class="screen" id="quiz-screen">
+      <div class="timer-row">
+        <div class="diff-tag" id="diff-tag">सरल</div>
+        <div class="timer-num" id="timer-num">0:45</div>
+        <div class="bar-track"><div class="bar-fill" id="bar-fill"></div></div>
+        <div class="paused-badge" id="paused-badge">⏸ रुका हुआ</div>
+      </div>
+      <div class="q-wrap" id="q-wrap">
+        <div class="q-num" id="q-num"></div>
+        <div class="q-main">
+          <div class="q-text" id="q-text"></div>
+          <div class="fig hidden" id="fig"></div>
+        </div>
+        <div class="options" id="q-options"></div>
+      </div>
+      <div class="ctrl-row">
+        <button class="ghost big playpause" id="pause-btn">⏸ रोकें</button>
+        <div class="side">
+          <button class="ghost big" id="prev-btn">← पिछला</button>
+          <button class="ghost big" id="next-btn">अगला →</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen" id="end-screen">
+      <h2>उत्तर कुंजी (Answer Key) — लाभ और हानि (Profit &amp; Loss)</h2>
+      <div class="key-grid" id="key-grid"></div>
+    </section>
+  </main>
+  <footer>गुरुकुल पब्लिक स्कूल · गणित अभ्यास परीक्षा · Prepared by Nepal Sir</footer>
+</div>
+
+<script>
+const QUESTIONS = [{"src": "लाभ और हानि", "q": "एक पुस्तक ₹ 150 में खरीदी गई तथा ₹ 180 में बेची गई। उस पर लाभ प्रतिशत है:", "opts": ["25%", "30%", "20%", "33%"], "correct": 2, "lvl": 2, "time": 45, "fig": null}, {"src": "लाभ और हानि", "q": "कोई कुर्सी ₹ 120 में खरीदी गई एवं 15% के लाभ पर बेची गई, तो विक्रय मूल्य क्या होगा?", "opts": ["₹ 136", "₹ 138", "₹ 135", "₹ 140"], "correct": 1, "lvl": 2, "time": 45, "fig": null}, {"src": "लाभ और हानि", "q": "एक घड़ीसाज़ ने एक पुरानी घड़ी ₹ 87 में खरीदी। उसने इसकी मरम्मत पर ₹ 10 लगाए तथा फिर उसे ₹ 105 में बेच दिया। उसका लाभ या हानि ज्ञात करें।", "opts": ["₹ 13 हानि", "₹ 13 लाभ", "₹ 8 लाभ", "₹ 8 हानि"], "correct": 2, "lvl": 3, "time": 90, "fig": null}, {"src": "लाभ और हानि", "q": "58 वस्तुओं को ₹ 550 में खरीदा जाता है, जबकि 50 वस्तुओं को ₹ 550 में बेचा जाता है, तो प्रतिशत लाभ क्या है?", "opts": ["16%", "30%", "25%", "20%"], "correct": 0, "lvl": 4, "time": 150, "fig": null}, {"src": "लाभ और हानि", "q": "40 वस्तुओं को ₹ 225 में खरीदा जाता है, जबकि 50 वस्तुओं को ₹ 225 में बेचा जाता है, तो प्रतिशत हानि बताएँ।", "opts": ["30%", "15%", "20%", "10%"], "correct": 2, "lvl": 4, "time": 150, "fig": null}, {"src": "लाभ और हानि", "q": "एक घड़ी ₹ 250 में खरीदकर 16% लाभ पर बेची जाती है तो विक्रय मूल्य क्या है?", "opts": ["₹ 266", "₹ 290", "₹ 234", "₹ 210"], "correct": 1, "lvl": 2, "time": 45, "fig": null}, {"src": "लाभ और हानि", "q": "एक आदमी ने ट्रांजिस्टर ₹ 300 में खरीदा तथा ₹ 100 उसको लाने में खर्च किया। यदि उसने वह ट्रांजिस्टर ₹ 350 में बेचा तो उसे कितनी प्रतिशत की हानि हुई?", "opts": ["15% हानि", "16% हानि", "12{1/2}% हानि", "12% हानि"], "correct": 2, "lvl": 3, "time": 90, "fig": null}, {"src": "लाभ और हानि", "q": "एक आदमी ने एक ट्रांजिस्टर ₹ 800 में खरीदा तथा उस पर ₹ 400 अतिरिक्त खर्च किया। इसके बाद उसने ₹ 1500 में उसे बेच दिया। उसका प्रतिशत लाभ क्या है?", "opts": ["20%", "30%", "25%", "40%"], "correct": 2, "lvl": 2, "time": 45, "fig": null}, {"src": "लाभ और हानि", "q": "एक साइकिल ₹ 650 में खरीद कर ₹ 585 में बेचा गया तो हानि % क्या होगी?", "opts": ["12.5%", "11%", "13%", "10%"], "correct": 3, "lvl": 2, "time": 45, "fig": null}, {"src": "लाभ और हानि", "q": "एक वस्तु 7% की हानि से ₹ 651 में बेची गई तो उसका क्रय मूल्य क्या होगा?", "opts": ["₹ 720", "₹ 700", "₹ 710", "₹ 800"], "correct": 1, "lvl": 2, "time": 45, "fig": null}, {"src": "लाभ और हानि", "q": "एक दुकानदार ने एक दर्जन पेन्सिलों को ₹ 30 में बेचकर ₹ 10 प्राप्त किया तो उसका लाभ प्रतिशत है:", "opts": ["20%", "35%", "66%", "50%"], "correct": 3, "lvl": 2, "time": 45, "fig": null}, {"src": "लाभ और हानि", "q": "एक घड़ी ₹ 153 में बेची जाती है, तो 15% की हानि होती है। उसे कितने रुपयें में बेचा जाय कि 10% लाभ हो?", "opts": ["₹ 198", "₹ 250", "₹ 190", "₹ 200"], "correct": 0, "lvl": 3, "time": 90, "fig": null}, {"src": "लाभ और हानि", "q": "कुछ नारंगी ₹ 11 में 10 के भाव से खरीदकर ₹ 10 में 11 के भाव में बेचा गया। प्रतिशत लाभ अथवा हानि बतावें—", "opts": ["17{43/121}% हानि", "17{45/121}% लाभ", "17{45/121}% हानि", "17{43/141}% लाभ"], "correct": 0, "lvl": 4, "time": 150, "fig": null}, {"src": "लाभ और हानि", "q": "किसी वस्तु को ₹ 1000 में बेचने से एक व्यक्ति को ₹ 200 हानि होती है। उसका हानि प्रतिशत क्या है?", "opts": ["25{1/3}%", "8{1/3}%", "66{2/3}%", "16{2/3}%"], "correct": 3, "lvl": 4, "time": 120, "fig": null}, {"src": "लाभ और हानि", "q": "यदि किसी वस्तु को ₹ 33 में बेचने पर ₹ 11 का लाभ होता है, तो लाभ प्रतिशत क्या होगा?", "opts": ["33{1/3}%", "50%", "25%", "40%"], "correct": 1, "lvl": 2, "time": 45, "fig": null}, {"src": "लाभ और हानि", "q": "कुछ वस्तुओं को ₹ 10 में 12 के भाव में खरीदा जाता है तथा सभी वस्तुओं को ₹ 12 में 10 के भाव से बेच दिया जाता है। प्रतिशत लाभ ज्ञात करें—", "opts": ["44%", "55%", "35%", "40%"], "correct": 0, "lvl": 4, "time": 150, "fig": null}, {"src": "लाभ और हानि", "q": "एक व्यक्ति ने जूतों का एक जोड़ा ₹ 200 में खरीदकर उसपर ₹ 20 विक्री-कर दिया। यदि वह उस जोड़े को ₹ 300 में बेचे, तो उसका लाभ क्या है?", "opts": ["₹ 60", "₹ 100", "₹ 80", "₹ 20"], "correct": 2, "lvl": 2, "time": 45, "fig": null}, {"src": "लाभ और हानि", "q": "एक व्यापारी ने एक पुरानी कार ₹ 6000 में खरीदी और मरम्मत पर ₹ 500 खर्च किए। उसने उसे ₹ 7020 में बेच दिया। उसके लाभ का प्रतिशत क्या है?", "opts": ["9.6%", "12.5%", "8%", "5%"], "correct": 2, "lvl": 3, "time": 90, "fig": null}, {"src": "लाभ और हानि", "q": "₹ 80 की वस्तु को ₹ 100 में बेचने पर प्रतिशत लाभ कितना होता है?", "opts": ["80%", "25%", "20%", "10%"], "correct": 1, "lvl": 2, "time": 45, "fig": null}, {"src": "लाभ और हानि", "q": "किसी वस्तु को 13% हानि के बदले 7% लाभ पर बेचा गया होता तो विक्रय मूल्य ₹ 450 अधिक होता तो वस्तु का क्रय मूल्य निकालें।", "opts": ["₹ 2250", "₹ 1300", "₹ 1600", "₹ 2500"], "correct": 0, "lvl": 4, "time": 120, "fig": null}, {"src": "लाभ और हानि", "q": "कोई वस्तु 10% लाभ पर ₹ 4400 में बेची गयी, तो वस्तु का खरीद मूल्य क्या था?", "opts": ["₹ 4000", "₹ 4200", "₹ 3500", "₹ 4100"], "correct": 0, "lvl": 2, "time": 45, "fig": null}, {"src": "लाभ और हानि", "q": "₹ 40 के वस्तु को ₹ 60 में बेचने पर प्रतिशत लाभ कितना होता है?", "opts": ["10%", "60%", "25%", "50%"], "correct": 3, "lvl": 2, "time": 45, "fig": null}, {"src": "लाभ और हानि", "q": "एक वस्तु ₹ 80 में खरीदी गई और 25% के लाभ पर बेच दी गई, विक्रयमूल्य क्या होगा?", "opts": ["₹ 125", "₹ 120", "₹ 20", "₹ 100"], "correct": 3, "lvl": 2, "time": 45, "fig": null}, {"src": "लाभ और हानि", "q": "कुछ नारंगियाँ रुपये में 8 के भाव से खरीदकर 10 के भाव से बेची गयी, तो प्रतिशत हानि होगी—", "opts": ["24%", "20%", "25%", "30%"], "correct": 1, "lvl": 4, "time": 150, "fig": null}, {"src": "लाभ और हानि", "q": "एक व्यक्ति ने एक मशीन ₹ 7500 की खरीदी और बाद में उसे ₹ 750 के लाभ पर बेच दिया। यदि उसने उस मशीन को ₹ 8500 में बेचा होता, तो उसे कितना अधिक लाभ होता?", "opts": ["₹ 1000", "₹ 500", "₹ 750", "₹ 250"], "correct": 3, "lvl": 3, "time": 90, "fig": null}, {"src": "लाभ और हानि", "q": "एक घोड़े को ₹ 1200 में बेचने पर 20% का लाभ होता है घोड़े का क्रय मूल्य निकालें।", "opts": ["₹ 1000", "₹ 1200", "₹ 700", "₹ 800"], "correct": 0, "lvl": 2, "time": 45, "fig": null}, {"src": "लाभ और हानि", "q": "किसी वस्तु को 40% लाभ पर ₹ 1960 में बेचा जाता है, तो 10% हानि पर उसका विक्रय मूल्य क्या होगा?", "opts": ["₹ 1200", "₹ 1400", "₹ 1300", "₹ 1260"], "correct": 3, "lvl": 3, "time": 90, "fig": null}, {"src": "लाभ और हानि", "q": "यदि ₹ 60 में खरीदी गई वस्तु ₹ 75 में बेची गई तो लाभ प्रतिशत ज्ञात करें।", "opts": ["21%", "25%", "23%", "24%"], "correct": 1, "lvl": 2, "time": 45, "fig": null}, {"src": "लाभ और हानि", "q": "एक व्यक्ति ने एक रेडियो ₹ 900 में खरीदकर ₹ 1200 में बेचा। उसका प्रतिशत लाभ ज्ञात कीजिए।", "opts": ["25%", "30%", "33{1/3}%", "20%"], "correct": 2, "lvl": 2, "time": 45, "fig": null}, {"src": "लाभ और हानि", "q": "एक सेलफोन को ₹ 2500 में खरीदा गया तथा ₹ 2750 में बेचा गया। प्रतिशत लाभ क्या है?", "opts": ["15%", "25%", "27%", "10%"], "correct": 3, "lvl": 2, "time": 45, "fig": null}, {"src": "लाभ और हानि", "q": "एक बैल ₹ 1400 में खरीदने पर पता चला कि उसमें कुछ ऐब है। अतएव 4{1/2}% घाटा सहकर उसे बेच दिया। बताएँ बैल कितने में बिका?", "opts": ["₹ 1337", "₹ 1350", "₹ 1320", "₹ 1330"], "correct": 0, "lvl": 3, "time": 90, "fig": null}, {"src": "लाभ और हानि", "q": "एक दुकानदार ने 40 साड़ियाँ ₹ 2240 में बेची और इस प्रकार से 12% का लाभ प्राप्त हुआ, तो साड़ियों का क्रय मूल्य क्या था?", "opts": ["₹ 2000", "₹ 2100", "₹ 2200", "₹ 2300"], "correct": 0, "lvl": 3, "time": 90, "fig": null}, {"src": "लाभ और हानि", "q": "₹ 820 के साइकिल को यदि 5% लाभ पर बेची जाए, तो उसका विक्रय मूल्य क्या होगा?", "opts": ["₹ 862", "₹ 800", "₹ 860", "₹ 861"], "correct": 3, "lvl": 2, "time": 45, "fig": null}, {"src": "लाभ और हानि", "q": "किसी सामान को ₹ 153 में बेचने पर एक आदमी को 10% की हानि होती है, 20% लाभ पाने के लिए उस वस्तु को कितना में बेचना पड़ेगा?", "opts": ["₹ 204", "₹ 240", "₹ 201", "₹ 402"], "correct": 0, "lvl": 3, "time": 90, "fig": null}, {"src": "लाभ और हानि", "q": "एक व्यक्ति ने एक पुराना साइकिल ₹ 450 में खरीदा और उसकी मरम्मत पर ₹ 50 व्यय किया। यदि उसने पुराना साइकिल ₹ 600 में बेचा, तो उसका लाभ प्रतिशत है?", "opts": ["18%", "20%", "25%", "15%"], "correct": 1, "lvl": 2, "time": 45, "fig": null}, {"src": "लाभ और हानि", "q": "₹ 800 की कोई मशीन यदि 7% हानि पर बेची जाए, तो वह कितने में बिकेगी?", "opts": ["₹ 740", "₹ 750", "₹ 742", "₹ 744"], "correct": 3, "lvl": 2, "time": 45, "fig": null}, {"src": "लाभ और हानि", "q": "एक रेडियो को ₹ 680 में बेचने पर एक दुकानदार को ₹ 120 का घाटा होता है। ₹ 120 का लाभ कमाने के लिए, रेडियो को कितने में बेचना चाहिए?", "opts": ["₹ 800", "₹ 720", "₹ 820", "₹ 920"], "correct": 3, "lvl": 3, "time": 90, "fig": null}, {"src": "लाभ और हानि", "q": "जब कोई वस्तु 8% की हानि पर ₹ 736 में बेची गई, तो बताएँ वस्तु कितने में बेची जाए कि उस पर 15% का लाभ हो?", "opts": ["₹ 920", "₹ 885", "₹ 900", "₹ 989"], "correct": 0, "lvl": 3, "time": 90, "fig": null}, {"src": "लाभ और हानि", "q": "चन्द्रकांत ने एक घर ₹ 2,00,000 में खरीदा तथा उसकी मरम्मत पर ₹ 50,000 लगाए। यदि वह उसे बेचने पर 20% लाभ पाना चाहता हो, तो घर का विक्रय मूल्य होगी—", "opts": ["₹ 300000", "₹ 200000", "₹ 500000", "₹ 30000"], "correct": 0, "lvl": 3, "time": 90, "fig": null}, {"src": "लाभ और हानि", "q": "यदि संतरे ₹ 1 में 10 के भाव से खरीदकर 8 के भाव से बेचे गये, तो प्रतिशत लाभ होगा—", "opts": ["26%", "20%", "27%", "25%"], "correct": 3, "lvl": 4, "time": 150, "fig": null}, {"src": "लाभ और हानि", "q": "एक मनुष्य किसी वस्तु को ₹ 200 में खरीद कर इसे 12{1/2}% पर बेच देता है, तो वस्तु का विक्रयमूल्य होगा—", "opts": ["₹ 200", "₹ 275", "₹ 175", "₹ 225"], "correct": 2, "lvl": 3, "time": 90, "fig": null}, {"src": "लाभ और हानि", "q": "यदि क्रय मूल्य ₹ 2516 और विक्रय-मूल्य ₹ 2272 हो, तो प्रतिशत में हानि होगी—", "opts": ["7.43%", "10.28%", "9.69%", "8.71%"], "correct": 2, "lvl": 4, "time": 120, "fig": null}, {"src": "लाभ और हानि", "q": "कोई रेडियो 15% के लाभ पर ₹ 851 में बिकता है, यदि वह ₹ 888 में बिकता है, तो लाभ प्रतिशत होगा—", "opts": ["26%", "30%", "25%", "20%"], "correct": 3, "lvl": 3, "time": 90, "fig": null}, {"src": "लाभ और हानि", "q": "एक मनुष्य ने 1 दर्जन केले ₹ 15 में खरीदे। उसने उन केलों को ₹ 12 के 15 के भाव से बेच दिया। बताइए उसे कितने प्रतिशत की हानि हुई?", "opts": ["36%", "35%", "40%", "37%"], "correct": 0, "lvl": 4, "time": 150, "fig": null}, {"src": "लाभ और हानि", "q": "एक मेज ₹ 950 में खरीद कर ₹ 1140 में बेच दिया गया। बताएँ इसमें कितना प्रतिशत लाभ हुआ?", "opts": ["35%", "30%", "25%", "20%"], "correct": 3, "lvl": 2, "time": 45, "fig": null}, {"src": "लाभ और हानि", "q": "एक पुराना मेज कुछ मूल्य देकर खरीदा गया तथा उसकी मरम्मत पर ₹ 150 व्यय किये गये। फिर उसे 20% लाभ लेकर ₹ 1620 में बेचा गया। मेज का क्रय-मूल्य ज्ञात कीजिए—", "opts": ["₹ 1350", "₹ 150", "₹ 1200", "₹ 950"], "correct": 2, "lvl": 3, "time": 90, "fig": null}, {"src": "लाभ और हानि", "q": "राहुल ने एक चॉकलेट दुकानदार से ₹ 15.00 की खरीदी। दुकानदार ने एक चॉकलेट पर ₹ 1.50 लाभ कमाया। ऐसी 20 चॉकलेट को खरीदने में दुकानदार का क्रय मूल्य है—", "opts": ["₹ 250", "₹ 330", "₹ 300", "₹ 270"], "correct": 3, "lvl": 3, "time": 90, "fig": null}, {"src": "लाभ और हानि", "q": "एक पंखे का क्रय मूल्य ₹ 250 हो और उसे 20% लाभ पर बेच दिया जाए, तो विक्रय मूल्य ज्ञात करें।", "opts": ["₹ 200", "₹ 250", "₹ 300", "₹ 275"], "correct": 2, "lvl": 2, "time": 45, "fig": null}, {"src": "लाभ और हानि", "q": "₹ 600 के रेडियो को यदि 12% की हानि पर बेचा जाए तो वह बिकेगी—", "opts": ["₹ 530", "₹ 526", "₹ 528", "₹ 525"], "correct": 2, "lvl": 2, "time": 45, "fig": null}, {"src": "लाभ और हानि", "q": "कोई मशीन 7% हानि पर ₹ 837 में बेची गई, तो उसका क्रय मूल्य क्या होगा?", "opts": ["₹ 810", "₹ 890", "₹ 900", "₹ 950"], "correct": 2, "lvl": 2, "time": 45, "fig": null}];
+const LETTERS = ["A","B","C","D"];
+const DIFF = {1:["सरल","e"],2:["सरल","e"],3:["मध्यम","m"],4:["कठिन","h"],5:["कठिन","h"]};
+
+const $ = id => document.getElementById(id);
+const startScreen=$('start-screen'), quizScreen=$('quiz-screen'), endScreen=$('end-screen');
+const timerNum=$('timer-num'), barFill=$('bar-fill'), diffTag=$('diff-tag'), pausedBadge=$('paused-badge');
+const qNum=$('q-num'), qText=$('q-text'), qOptions=$('q-options'), figBox=$('fig'), qWrap=$('q-wrap');
+const progressLine=$('progress-line'), pauseBtn=$('pause-btn');
+
+let current=0, paused=false, remainingMs=0, endAt=0, ticker=null, totalMs=0, started=false;
+
+function rich(s){
+  return String(s).replace(/\{([^{}\/]+)\/([^{}\/]+)\}/g,'<span class="frac"><span>$1</span><span>$2</span></span>');
+}
+function fmt(sec){ return Math.floor(sec/60)+":"+String(sec%60).padStart(2,'0'); }
+
+function renderFig(f){
+  if(!f){ figBox.className='fig hidden'; figBox.innerHTML=''; return; }
+  figBox.className='fig';
+  let h='<div class="fig-title">'+f.title+'</div>';
+  if(f.type==='bars'){
+    h+='<div class="bars">';
+    f.labels.forEach((l,i)=>{
+      const v=f.values[i], unk=(v===null);
+      const hgt=unk?3.2:(v/f.max*6);
+      h+='<div class="bcol"><div class="bval'+(unk?' unk':'')+'">'+(unk?'?':v)+'</div>'+
+         '<div class="bar'+(unk?' unk':'')+'" style="height:'+hgt+'em"></div><div class="blab">'+l+'</div></div>';
+    });
+    h+='</div>';
+  } else if(f.type==='picto'){
+    h+='<table class="picto">';
+    f.rows.forEach(r=>{ h+='<tr><td>'+r[0]+'</td><td>'+r[1].repeat(r[2])+'</td></tr>'; });
+    h+='</table><div class="fig-note">'+f.note+'</div>';
+  } else if(f.type==='lines'){
+    h+='<div class="fig-lines">'+f.lines.map(l=>'<div>'+l+'</div>').join('')+'</div>';
+  }
+  figBox.innerHTML=h;
+}
+
+function fitToBox(){
+  let qs=Math.min(44, window.innerWidth*0.028);
+  let os=Math.min(32, window.innerWidth*0.021);
+  let g=0;
+  const apply=()=>{ qWrap.style.setProperty('--qs',qs+'px'); qWrap.style.setProperty('--os',os+'px'); };
+  apply();
+  while(qWrap.scrollHeight>qWrap.clientHeight+1 && g<70){
+    g++; qs=Math.max(12,qs-1); os=Math.max(10,os-0.8); apply();
+  }
+}
+
+function renderQuestion(){
+  const item=QUESTIONS[current];
+  qNum.textContent="प्रश्न "+(current+1)+" / "+QUESTIONS.length+"   ·   "+item.src;
+  progressLine.textContent="प्रश्न "+(current+1)+" / "+QUESTIONS.length;
+  qText.innerHTML=rich(item.q);
+  renderFig(item.fig);
+  qOptions.innerHTML='';
+  const longest=Math.max(...item.opts.map(o=>o.length));
+  qOptions.className='options'+(longest>38?' one-col':'');
+  item.opts.forEach((o,i)=>{
+    const d=document.createElement('div'); d.className='opt';
+    d.innerHTML='<span class="tag">'+LETTERS[i]+'</span><span>'+rich(o)+'</span>';
+    qOptions.appendChild(d);
+  });
+  const dl=DIFF[item.lvl];
+  diffTag.textContent=dl[0]; diffTag.className='diff-tag '+dl[1];
+  totalMs=item.time*1000; remainingMs=totalMs; endAt=Date.now()+remainingMs;
+  updateTimer();
+  requestAnimationFrame(fitToBox);
+}
+
+function updateTimer(){
+  const sec=Math.max(0,Math.ceil(remainingMs/1000));
+  timerNum.textContent=fmt(sec);
+  barFill.style.width=(remainingMs/totalMs*100)+'%';
+  timerNum.classList.remove('warn','danger','paused');
+  const frac=remainingMs/totalMs;
+  let col='var(--safe)';
+  if(paused){ timerNum.classList.add('paused'); col='var(--ink-dim)'; }
+  else if(sec<=10 || frac<=0.15){ timerNum.classList.add('danger'); col='var(--danger)'; }
+  else if(frac<=0.35){ timerNum.classList.add('warn'); col='var(--warn)'; }
+  barFill.style.background=col;
+}
+
+function tick(){
+  if(paused||!started) return;
+  remainingMs=endAt-Date.now();
+  if(remainingMs<=0){ goNext(); return; }
+  updateTimer();
+}
+
+function goNext(){ if(current<QUESTIONS.length-1){ current++; renderQuestion(); } else showEnd(); }
+function goPrev(){ if(current>0){ current--; renderQuestion(); } }
+
+function setPaused(p){
+  if(p===paused) return;
+  if(p){ remainingMs=Math.max(0,endAt-Date.now()); }
+  else { endAt=Date.now()+remainingMs; }
+  paused=p;
+  pauseBtn.textContent=paused?'▶ चलाएँ':'⏸ रोकें';
+  pausedBadge.classList.toggle('show',paused);
+  updateTimer();
+}
+
+function showEnd(){
+  clearInterval(ticker); started=false;
+  quizScreen.classList.remove('active'); endScreen.classList.add('active');
+  progressLine.textContent='उत्तर कुंजी';
+  const grid=$('key-grid'); grid.innerHTML='';
+  QUESTIONS.forEach((q,i)=>{
+    const c=document.createElement('div'); c.className='key-cell';
+    c.innerHTML='<b>'+(i+1)+'</b>: <span>'+LETTERS[q.correct]+'</span>';
+    grid.appendChild(c);
+  });
+}
+
+$('start-btn').addEventListener('click',()=>{
+  startScreen.classList.remove('active'); quizScreen.classList.add('active');
+  current=0; started=true; paused=false; renderQuestion();
+  clearInterval(ticker); ticker=setInterval(tick,250);
+  if(document.fonts&&document.fonts.ready) document.fonts.ready.then(fitToBox);
+});
+$('next-btn').addEventListener('click',goNext);
+$('prev-btn').addEventListener('click',goPrev);
+pauseBtn.addEventListener('click',()=>setPaused(!paused));
+
+const fsBtn=$('fullscreen-btn');
+function toggleFs(){
+  if(!document.fullscreenElement){ document.documentElement.requestFullscreen().catch(()=>{}); }
+  else { document.exitFullscreen().catch(()=>{}); }
+}
+fsBtn.addEventListener('click',toggleFs);
+document.addEventListener('fullscreenchange',()=>{
+  fsBtn.textContent=document.fullscreenElement?'⤡ पूर्ण स्क्रीन बंद':'⛶ पूर्ण स्क्रीन';
+  if(quizScreen.classList.contains('active')) setTimeout(fitToBox,100);
+});
+window.addEventListener('resize',()=>{ if(quizScreen.classList.contains('active')) fitToBox(); });
+document.addEventListener('keydown',e=>{
+  if(!started) return;
+  if(e.code==='Space'){ e.preventDefault(); setPaused(!paused); }
+  else if(e.code==='ArrowRight') goNext();
+  else if(e.code==='ArrowLeft') goPrev();
+  else if(e.key==='f'||e.key==='F') toggleFs();
+});
+</script>
+</body>
+</html>
